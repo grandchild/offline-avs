@@ -3,6 +3,7 @@
 #include <windows.h>
 
 #include "DummyWindow.h"
+#include "FFT.h"
 #include "FrameDump.h"
 #include "WaveFileThingy.h"
 #include "WinampShiz.h"
@@ -79,6 +80,22 @@ int main( const unsigned int count, const char* const* const pszCommandLine )
 			}
 
 			mod.waveformNch = 1;
+			
+			float fftBuffer[ 576 * 2 ];
+			for( int i = 0; i < 576; ++i )
+			{
+				fftBuffer[ 2 * i ] = static_cast< float >( mod.waveformData[ 0 ][ i ] ) / 255.f;
+				fftBuffer[ 2 * i + 1 ] = 0.0f;
+			}
+
+			DanielsonLanczos< 576, float >::apply( fftBuffer );
+
+			for( int i = 0; i < 576; ++i )
+			{
+				mod.spectrumData[ 0 ][ i ] = static_cast< unsigned char >( fftBuffer[ i * 2 ] * 255.f / fftBuffer[ 0 ] );
+			}
+			
+			mod.spectrumNch = 1;
 
 			bufferPos += ( 1.0f / 30.0f );
 			while( bufferPos > sampleLength )
