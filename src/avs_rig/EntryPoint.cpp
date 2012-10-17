@@ -1,5 +1,6 @@
-#include <windows.h>
+#include <math.h>
 #include <stdio.h>
+#include <windows.h>
 
 #include "DummyWindow.h"
 #include "WaveFileThingy.h"
@@ -10,6 +11,7 @@ int avsWidth = 400;
 
 static void* s_pBuffer = NULL;
 static unsigned int s_uBufferSize = 0;
+static unsigned int s_uSamplesPerSec = 0;
 
 int main( const unsigned int count, const char* const* const pszCommandLine )
 {
@@ -26,7 +28,7 @@ int main( const unsigned int count, const char* const* const pszCommandLine )
 	default:
 	case 5:		{
 					LoadWaveFileThingy( pszCommandLine[ 4 ] );
-					GetBuffer( s_pBuffer, s_uBufferSize );
+					GetBuffer( s_pBuffer, s_uBufferSize, s_uSamplesPerSec );
 					s_uBufferSize >>= 1;
 	case 4:			avsHeight = atoi( pszCommandLine[ 3 ] );
 	case 3:			avsWidth = atoi( pszCommandLine[ 2 ] );
@@ -46,7 +48,7 @@ int main( const unsigned int count, const char* const* const pszCommandLine )
 	mod.Init(&mod);
 
 	MSG msg;
-	u_int uBufferPos = 0;
+	float bufferPos = 0.0f;
 	while( GetMessage( &msg, NULL, 0, 0 ) )
 	{
 		TranslateMessage( &msg );
@@ -54,17 +56,34 @@ int main( const unsigned int count, const char* const* const pszCommandLine )
 
 		if( s_pBuffer )
 		{
+			// take 576 samples at 1/30s
+			const float sampleLength = static_cast< float >( s_uBufferSize ) / static_cast< float >( s_uSamplesPerSec );
+			const float baseSampleRate = sampleLength / ( 30.0f * 576.0f );
+
+#define LERP (0)
 			for( int i = 0; i < 576; ++i )
 			{
-				const int sourceIndex = ( uBufferPos + i ) % s_uBufferSize;
-
-				mod.waveformData[ 0 ][ i ] = reinterpret_cast< unsigned short* >( s_pBuffer )[ sourceIndex ] >> 8;
+				// linearly interpolate the source data
+				const float pos = ( bufferPos + baseSampleRate * i ) * static_cast< float >( s_uBufferSize );
+				const int idx1 = static_cast< int >( floorf( pos ) );
+#if !LERP
+				mod.waveformData[ 0 ][ i ] = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ idx1 + i ] ) / 256.0f /* 128.0f - 1.0f*/;
+#else
+				const float lerpAmount = pos - static_cast< float >( idx1 );
+				const int idx2 = ( idx1 + 1 ) % s_uBufferSize;
+				const float s1 = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ idx1 ] );
+				const float s2 = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ idx2 ] );
+				mod.waveformData[ 0 ][ i ] = static_cast< char >( ( s1 + lerpAmount * ( s2 - s1 ) ) / 256.0f /* 128.0f - 1.0f*/ );
+#endif
 			}
 
 			mod.waveformNch = 1;
 
-			uBufferPos += 576;
-			uBufferPos %= s_uBufferSize;
+			bufferPos += ( 1.0f / 30.0f );
+			while( bufferPos > sampleLength )
+			{
+				bufferPos -= sampleLength;
+			}
 		}
 
 		// TODO: cram some audio data and forced timings in here

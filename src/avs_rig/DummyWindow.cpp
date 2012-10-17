@@ -21,11 +21,7 @@ HWND createDummyWindow()
 	WndClsEx.cbSize        = sizeof( WNDCLASSEX );
 	WndClsEx.style         = CS_HREDRAW | CS_VREDRAW;
 	WndClsEx.lpfnWndProc   = WndProc;
-	//WndClsEx.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
-	//WndClsEx.hCursor       = LoadCursor(NULL, IDC_ARROW);
-	//WndClsEx.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 	WndClsEx.lpszClassName = "Dummy";
-	//WndClsEx.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
 
 	// Register the application
 	RegisterClassExA(&WndClsEx);

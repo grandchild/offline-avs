@@ -30,9 +30,10 @@ const WAVEFORMATEX& GetWaveFormat()
 	return s_xFormat;
 }
 
-void GetBuffer( void*& pBuffer, unsigned int& uBufferSize )
+void GetBuffer( void*& pBuffer, unsigned int& uBufferSize, unsigned int& uSamplesPerSec )
 {
 	uBufferSize = s_uBufferSize;
+	uSamplesPerSec = s_xFormat.nSamplesPerSec;
 	pBuffer = s_pBuffer;
 }
 
