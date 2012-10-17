@@ -1,4 +1,5 @@
 #include "DummyWindow.h"
+#include "FrameDump.h"
 #include "WinampShiz.h"
 
 static HWND s_hwnd = NULL;
@@ -52,41 +53,48 @@ HWND createDummyWindow()
 
 LRESULT WINAPI WndProc( HWND h, UINT msg, WPARAM w, LPARAM l )
 {
-	// winamp version check
-	if( ( msg == WM_USER )
-		&& ( w == 0 )
-		&& ( l == 0 ) )
+	switch( msg )
 	{
-		return 0x2900;
-	}
+		// SE: this is shit
+		case WM_KEYUP:
+		{
+			if( w == 0x43 )
+			{
+				StartFrameDump();
+			}
 
+			return DefWindowProcA( h, msg, w, l );
+		}
+		case WM_USER:
+		{
+			switch( l )
+			{
+				// SE - 17/10/2012: note fallthrough is intentional
+				case IPC_SETVISWND:
+				{
+					s_visWindow = (HWND)w;
+
+					SetWindowPos( s_visWindow, 0, 0, 0, avsWidth, avsHeight, 0 );
+				}
+				default:				return DefWindowProcA( h, msg, w, l );
+				case 0:					return 0x2900;
+				case 334:				return (LRESULT)"fuck_you.ini";
+				case IPC_GET_EMBEDIF:	return (LRESULT)e;
+				
+			}
+			break;
+		}
+		default:
+		{
+			return DefWindowProcA( h, msg, w, l );
+		}
+	}
+/*
 	if( ( msg == WM_USER )
 		&& ( l == 611 ) )
 	{
 		//return 0;
 		//return (LRESULT)s_hwnd;
-	}
-
-	// get ini file
-	if( ( msg == WM_USER )
-		&& ( l == 334 ) )
-	{
-		return (LRESULT)"fuck_you.ini";
-	}
-
-	if( ( msg == WM_USER )
-		&& ( l == IPC_GET_EMBEDIF ) )
-	{
-		return (LRESULT)e;
-	}
-
-	if( ( msg == WM_USER )
-		&& ( l == IPC_SETVISWND ) )
-	{
-		s_visWindow = (HWND)w;
-
-		SetWindowPos( s_visWindow, 0, 0, 0, avsWidth, avsHeight, 0 );
-	}
-
-	return DefWindowProcA( h, msg, w, l );
+	}	
+*/
 }

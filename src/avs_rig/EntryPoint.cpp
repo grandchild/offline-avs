@@ -3,6 +3,7 @@
 #include <windows.h>
 
 #include "DummyWindow.h"
+#include "FrameDump.h"
 #include "WaveFileThingy.h"
 #include "WinampShiz.h"
 
@@ -89,6 +90,18 @@ int main( const unsigned int count, const char* const* const pszCommandLine )
 		// TODO: cram some audio data and forced timings in here
 
 		mod.Render( &mod );
+
+		FrameDump( mod.hwndParent, avsWidth, avsHeight );
+
+		static bool oldcDown = false;
+		const bool cDown = GetAsyncKeyState( 0x43 ) & 0x8000;
+
+		if( oldcDown && !cDown )
+		{
+			StartFrameDump();
+		}
+
+		oldcDown = cDown;
 	}
 
 	return 0;

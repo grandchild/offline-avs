@@ -165,6 +165,38 @@
 	<References>
 	</References>
 	<Files>
+		<Filter
+			Name="stb"
+			>
+			<File
+				RelativePath=".\stb\stb_image.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\stb\stb_image.h"
+				>
+			</File>
+			<File
+				RelativePath=".\stb\stb_image_write.h"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath=".\DummyWindow.cpp"
 			>
@@ -178,22 +210,16 @@
 			>
 		</File>
 		<File
+			RelativePath=".\FrameDump.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\FrameDump.h"
+			>
+		</File>
+		<File
 			RelativePath=".\WaveFileThingy.cpp"
 			>
-			<FileConfiguration
-				Name="Debug|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-				/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32"
-				>
-				<Tool
-					Name="VCCLCompilerTool"
-				/>
-			</FileConfiguration>
 		</File>
 		<File
 			RelativePath=".\WaveFileThingy.h"
