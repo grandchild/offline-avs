@@ -240,7 +240,10 @@ int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, i
 	const int limit = w * h;
 	for( int i = 0; i < limit; ++i )
 	{
-		framebuffer[ i ] |= 0xFF000000;
+		framebuffer[ i ] = 0xFF000000 +
+							( framebuffer[ i ] & 0x0000FF00 ) +
+							( ( framebuffer[ i ]<<16 ) & 0x00FF0000 ) +
+							( ( framebuffer[ i ]>>16 ) & 0x000000FF );
 	}
 	stbi_write_png( outPath, w, h, 4, framebuffer, 4 * w ); 
 	++i;
