@@ -69,7 +69,7 @@ int main( const unsigned int count, const char* const* const pszCommandLine )
 				const float pos = ( bufferPos + baseSampleRate * i ) * static_cast< float >( s_uBufferSize );
 				const int idx1 = static_cast< int >( floorf( pos ) );
 #if !LERP
-				mod.waveformData[ 0 ][ i ] = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ idx1 + i ] ) / 256.0f /* 128.0f - 1.0f*/;
+				mod.waveformData[ 0 ][ i ] = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ ( idx1 + i ) % s_uBufferSize ] ) / 256.0f /* 128.0f - 1.0f*/;
 #else
 				const float lerpAmount = pos - static_cast< float >( idx1 );
 				const int idx2 = ( idx1 + 1 ) % s_uBufferSize;
