@@ -81,7 +81,7 @@ int main( const unsigned int count, const char* const* const pszCommandLine )
 
 			mod.waveformNch = 1;
 			
-			float fftBuffer[ 576 * 2 ];
+			float fftBuffer[ 576 * 4 ];
 			for( int i = 0; i < 576; ++i )
 			{
 				fftBuffer[ 2 * i ] = static_cast< float >( mod.waveformData[ 0 ][ i ] ) / 255.f;
