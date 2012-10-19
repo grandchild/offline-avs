@@ -106,6 +106,9 @@ int main( const unsigned int count, const char* const* const pszCommandLine )
 
 		// TODO: cram some audio data and forced timings in here
 
+		mod.delayMs = 33;
+		mod.latencyMs = 33;
+		mod.sRate = s_uSamplesPerSec;
 		mod.Render( &mod );
 
 		FrameDump( mod.hwndParent, avsWidth, avsHeight );

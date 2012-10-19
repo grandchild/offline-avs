@@ -27,18 +27,19 @@ HWND createDummyWindow()
 	// Register the application
 	RegisterClassExA(&WndClsEx);
 
-	// Create the window object
-	hWnd = CreateWindowA("Dummy",
-			  "Dummy",
-			  WS_OVERLAPPEDWINDOW,
-			  CW_USEDEFAULT,
-			  CW_USEDEFAULT,
-			  CW_USEDEFAULT,
-			  CW_USEDEFAULT,
-			  NULL,
-			  NULL,
-			  NULL,
-			  NULL);
+	RECT rect;
+	rect.top = rect.left = 0;
+	rect.right = avsWidth;
+	rect.bottom = avsHeight;
+
+	AdjustWindowRect( &rect, WS_OVERLAPPEDWINDOW, false );
+
+	hWnd = CreateWindowA(
+		"Dummy", "Dummy",
+		WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT, CW_USEDEFAULT,
+		rect.right - rect.left, rect.bottom - rect.top,
+		NULL, NULL, NULL, NULL );
 	
 	// Find out if the window was created
 	if( !hWnd ) // If the window was not created,
