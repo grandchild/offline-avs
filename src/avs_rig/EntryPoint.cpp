@@ -124,5 +124,7 @@ int main( const unsigned int count, const char* const* const pszCommandLine )
 		oldcDown = cDown;
 	}
 
+	mod.Quit( &mod );
+
 	return 0;
 }

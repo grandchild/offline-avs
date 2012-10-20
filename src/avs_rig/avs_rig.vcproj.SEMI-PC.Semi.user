@@ -11,7 +11,7 @@
 			<DebugSettings
 				Command="$(TargetPath)"
 				WorkingDirectory="$(TargetDir)"
-				CommandArguments="vis_avs.dll 400 400 song3.wav"
+				CommandArguments="vis_avs.dll 400 400 sine2.wav"
 				Attach="false"
 				DebuggerType="3"
 				Remote="1"
