@@ -15,6 +15,8 @@ static void* s_pBuffer = NULL;
 static unsigned int s_uBufferSize = 0;
 static unsigned int s_uSamplesPerSec = 0;
 
+#define DUMP_ON_C (0)
+
 int main( const unsigned int count, const char* const* const pszCommandLine )
 {
 	const char* dllPath = pszCommandLine[ 0 ];
@@ -118,7 +120,9 @@ int main( const unsigned int count, const char* const* const pszCommandLine )
 
 		if( oldcDown && !cDown )
 		{
+#if DUMP_ON_C
 			StartFrameDump();
+#endif
 		}
 
 		oldcDown = cDown;
