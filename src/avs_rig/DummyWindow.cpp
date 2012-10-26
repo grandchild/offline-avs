@@ -1,6 +1,10 @@
 #include "DummyWindow.h"
+#include "EntryPoint.h"
 #include "FrameDump.h"
 #include "WinampShiz.h"
+#include <iostream>
+
+using namespace std;
 
 static HWND s_hwnd = NULL;
 static HWND s_visWindow = NULL;
@@ -56,6 +60,13 @@ LRESULT WINAPI WndProc( HWND h, UINT msg, WPARAM w, LPARAM l )
 {
 	switch( msg )
 	{
+		case 12345:
+		{
+			// From EntryPoint.h
+			SendWavePacket();
+			return DefWindowProcA( h, msg, w, l );
+		}
+
 		// SE: this is shit
 		case WM_KEYUP:
 		{
@@ -81,7 +92,6 @@ LRESULT WINAPI WndProc( HWND h, UINT msg, WPARAM w, LPARAM l )
 				case 0:					return 0x2900;
 				case 334:				return (LRESULT)"fuck_you.ini";
 				case IPC_GET_EMBEDIF:	return (LRESULT)e;
-				
 			}
 			break;
 		}
