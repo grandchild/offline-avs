@@ -1,7 +1,9 @@
 #include <math.h>
 #include <stdio.h>
 #include <windows.h>
+#include <iostream>
 
+#include "EntryPoint.h"
 #include "DummyWindow.h"
 #include "FFT.h"
 #include "FrameDump.h"
@@ -11,11 +13,15 @@
 int avsHeight = 400;
 int avsWidth = 400;
 
+using namespace std;
+
 static void* s_pBuffer = NULL;
 static unsigned int s_uBufferSize = 0;
 static unsigned int s_uSamplesPerSec = 0;
 
-#define DUMP_ON_C (0)
+float fTimeNowMS = 0.0f;
+winampVisModule* mod;
+bool bStereoAudio = false;
 
 int main( const unsigned int count, const char* const* const pszCommandLine )
 {
@@ -46,89 +52,93 @@ int main( const unsigned int count, const char* const* const pszCommandLine )
 	winampVisHeader* (*pfn)() = reinterpret_cast< winampVisHeader* (*)() >( GetProcAddress( hmod, "winampVisGetHeader" ) );
 
 	winampVisHeader& hdr = *pfn();
-	winampVisModule& mod = *( hdr.getModule( 0 ) );
-	mod.hwndParent = createDummyWindow();
-	mod.hDllInstance = hmod;
-	mod.Init(&mod);
+	mod = hdr.getModule( 0 );
+	mod->hwndParent = createDummyWindow();
+	mod->hDllInstance = hmod;
+	mod->Init(mod);
 
 	MSG msg;
-	float bufferPos = 0.0f;
 	while( GetMessage( &msg, NULL, 0, 0 ) )
 	{
 		TranslateMessage( &msg );
 		DispatchMessage( &msg );
-
-		if( s_pBuffer )
-		{
-			// take 576 samples at 1/30s
-			const float sampleLength = static_cast< float >( s_uBufferSize ) / static_cast< float >( s_uSamplesPerSec );
-			const float baseSampleRate = sampleLength / ( 30.0f * 576.0f );
-
-#define LERP (0)
-			for( int i = 0; i < 576; ++i )
-			{
-				// linearly interpolate the source data
-				const float pos = ( bufferPos + baseSampleRate * i ) * static_cast< float >( s_uBufferSize );
-				const int idx1 = static_cast< int >( floorf( pos ) );
-#if !LERP
-				mod.waveformData[ 0 ][ i ] = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ ( idx1 + i ) % s_uBufferSize ] ) / 256.0f /* 128.0f - 1.0f*/;
-#else
-				const float lerpAmount = pos - static_cast< float >( idx1 );
-				const int idx2 = ( idx1 + 1 ) % s_uBufferSize;
-				const float s1 = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ idx1 ] );
-				const float s2 = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ idx2 ] );
-				mod.waveformData[ 0 ][ i ] = static_cast< char >( ( s1 + lerpAmount * ( s2 - s1 ) ) / 256.0f /* 128.0f - 1.0f*/ );
-#endif
-			}
-
-			mod.waveformNch = 1;
-			
-			float fftBuffer[ 576 * 4 ];
-			for( int i = 0; i < 576; ++i )
-			{
-				fftBuffer[ 2 * i ] = static_cast< float >( mod.waveformData[ 0 ][ i ] ) / 255.f;
-				fftBuffer[ 2 * i + 1 ] = 0.0f;
-			}
-
-			DanielsonLanczos< 576, float >::apply( fftBuffer );
-
-			for( int i = 0; i < 576; ++i )
-			{
-				mod.spectrumData[ 0 ][ i ] = static_cast< unsigned char >( fftBuffer[ i * 2 ] * 255.f / fftBuffer[ 0 ] );
-			}
-			
-			mod.spectrumNch = 1;
-
-			bufferPos += ( 1.0f / 30.0f );
-			while( bufferPos > sampleLength )
-			{
-				bufferPos -= sampleLength;
-			}
-		}
-
-		// TODO: cram some audio data and forced timings in here
-
-		mod.delayMs = 33;
-		mod.latencyMs = 33;
-		mod.sRate = s_uSamplesPerSec;
-		mod.Render( &mod );
-
-		FrameDump( mod.hwndParent, avsWidth, avsHeight );
-
-		static bool oldcDown = false;
-		const bool cDown = GetAsyncKeyState( 0x43 ) & 0x8000;
-
-		if( oldcDown && !cDown )
-		{
-#if DUMP_ON_C
-			StartFrameDump();
-#endif
-		}
-
-		oldcDown = cDown;
 	}
 
 	//mod.Quit( &mod );
 
 	return 0;
+}
+
+void SendWavePacket()
+{
+	const float sampleLength = static_cast< float >( s_uBufferSize ) / static_cast< float >( s_uSamplesPerSec );
+
+	if( s_pBuffer )
+	{
+		const float fSampleNow = ( fTimeNowMS / 1000.0f ) * static_cast< float >( s_uSamplesPerSec );
+		const float pos = fSampleNow;
+		const int idx1 = static_cast< int >( floorf( pos ) );
+
+		if ( bStereoAudio )
+		{
+			for( int i = 0; i < 576; ++i )
+			{
+				mod->waveformData[ 0 ][ i ] = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ ( idx1 + ( i * 2 ) ) ] ) / 256.0f;
+				mod->waveformData[ 1 ][ i ] = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ ( idx1 + ( i * 2 + 1 ) ) ] ) / 256.0f;
+
+				//fftBuffer[ 2 * i ] = static_cast< float >( mod->waveformData[ 0 ][ i ] ) / 255.f;
+				//fftBuffer[ 2 * i + 1 ] = 0.0f;
+			}
+			mod->waveformNch = 2;
+		}
+		else
+		{
+			for( int i = 0; i < 576; ++i )
+			{
+				mod->waveformData[ 0 ][ i ] = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ ( idx1 + ( i * 2 ) ) ] ) / 256.0f;
+			}
+
+			mod->waveformNch = 1;
+		}
+
+		// Spectrum Data
+		/*
+		if ( bStereoAudio )
+		{
+			for( int i = 0; i < 576; ++i )
+			{
+				fftBuffer[ 2 * i ] = static_cast< float >( mod->waveformData[ 0 ][ i ] ) / 255.f;
+				fftBuffer[ 2 * i + 1 ] = 0.0f;
+			}
+		}
+
+		float fftBuffer[ 576 * 4 ];
+	
+
+		DanielsonLanczos< 576, float >::apply( fftBuffer );
+
+		for( int i = 0; i < 576; ++i )
+		{
+			mod->spectrumData[ 0 ][ i ] = static_cast< unsigned char >( fftBuffer[ i * 2 ] * 255.f / fftBuffer[ 0 ] );
+		}
+		
+		mod->spectrumNch = 1;
+		*/
+	}
+
+	// TODO: cram some audio data and forced timings in here
+
+	cout << "PASSING NEW WAVE DATA: " << bStereoAudio + 1 << "ch. @ " << fTimeNowMS << " ms\n";
+
+	mod->delayMs = 33;
+	mod->latencyMs = 33;
+	mod->sRate = s_uSamplesPerSec;
+	mod->Render( mod );
+
+	fTimeNowMS += ( 1000.0f / 30.0f ) * ( bStereoAudio ? 2.0f : 1.0f );
+}
+
+void SetStereo( bool bStereo )
+{
+	bStereoAudio = bStereo;
 }
