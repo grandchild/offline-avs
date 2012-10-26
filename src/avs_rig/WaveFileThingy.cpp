@@ -1,3 +1,5 @@
+#include "EntryPoint.h"
+
 #include <stdio.h>
 #include <windows.h>
 
@@ -91,6 +93,9 @@ bool ParseChunk( FILE* pxFile )
 			{
 				return false;
 			}
+
+			// From EntryPoint.h
+			 SetStereo( s_xFormat.nChannels == 2 );
 
 			return true;
 		}
