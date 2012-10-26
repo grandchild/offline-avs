@@ -2,7 +2,9 @@
 #include "EntryPoint.h"
 #include "FrameDump.h"
 #include "WinampShiz.h"
+
 #include <iostream>
+#include <direct.h>
 
 using namespace std;
 
@@ -90,7 +92,14 @@ LRESULT WINAPI WndProc( HWND h, UINT msg, WPARAM w, LPARAM l )
 				}
 				default:				return DefWindowProcA( h, msg, w, l );
 				case 0:					return 0x2900;
-				case 334:				return (LRESULT)"fuck_you.ini";
+				case 334:				// The config INI
+				{
+					// This wants an absolute path
+					char szBuf[ MAX_PATH ];
+					char* szBufPath = _getcwd( NULL, 0 );
+					sprintf( szBuf, "%s\\config.ini", szBufPath );
+					return (LRESULT)szBuf;
+				}
 				case IPC_GET_EMBEDIF:	return (LRESULT)e;
 			}
 			break;
