@@ -4,10 +4,14 @@
 // ~200 lines of code...
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#define MY_WM_MESSAGE ( WM_APP + 1 )
 
 #include "stb_image_write.h"
 
 #include <windows.h>
+#include <iostream>
+
+using namespace std;
 
 class C_RBASE
 {
@@ -133,8 +137,20 @@ int C_THISCLASS::render(char visdata[2][2][576], int isBeat, int *framebuffer, i
 							( ( framebuffer[ i ]<<16 ) & 0x00FF0000 ) +
 							( ( framebuffer[ i ]>>16 ) & 0x000000FF );
 	}
-	stbi_write_png( outPath, w, h, 4, fbout, 4 * w ); 
-	++i;
+	
+	HWND recieverHwnd = FindWindow( L"Dummy", NULL );
+	if ( recieverHwnd != NULL )
+	{
+		TCHAR szBuf[80];
+		//GetWindowText( recieverHwnd, szBuf, 80 );
+		SendMessage( recieverHwnd, 12345, 80, (LPARAM)szBuf );
+
+		cout << "=== SAVING FRAME " << i << " ===\n";
+
+		stbi_write_png( outPath, w, h, 4, fbout, 4 * w ); 
+		++i;
+	}
+	
 	return 0;
 }
 
