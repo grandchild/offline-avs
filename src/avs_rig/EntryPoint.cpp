@@ -81,24 +81,30 @@ void SendWavePacket()
 
 		if ( bStereoAudio )
 		{
+			// STEREO
 			for( int i = 0; i < 576; ++i )
 			{
-				mod->waveformData[ 0 ][ i ] = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ ( idx1 + ( i * 2 ) ) ] ) / 256.0f;
-				mod->waveformData[ 1 ][ i ] = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ ( idx1 + ( i * 2 + 1 ) ) ] ) / 256.0f;
+				mod->waveformData[ 0 ][ i ] = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ idx1 + ( i * 2 ) ] ) / 256.0f;
+				mod->waveformData[ 1 ][ i ] = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ idx1 + ( i * 2 ) + 1 ] ) / 256.0f;
 
 				//fftBuffer[ 2 * i ] = static_cast< float >( mod->waveformData[ 0 ][ i ] ) / 255.f;
 				//fftBuffer[ 2 * i + 1 ] = 0.0f;
 			}
+
 			mod->waveformNch = 2;
+			mod->spectrumNch = 2;
 		}
 		else
 		{
+			// MONO
 			for( int i = 0; i < 576; ++i )
 			{
 				mod->waveformData[ 0 ][ i ] = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ ( idx1 + ( i * 2 ) ) ] ) / 256.0f;
+				mod->waveformData[ 1 ][ i ] = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ ( idx1 + ( i * 2 ) ) ] ) / 256.0f;
 			}
 
-			mod->waveformNch = 1;
+			mod->waveformNch = 2;
+			mod->spectrumNch = 2;
 		}
 
 		// Spectrum Data
@@ -126,8 +132,6 @@ void SendWavePacket()
 		*/
 	}
 
-	// TODO: cram some audio data and forced timings in here
-
 	cout << "PASSING NEW WAVE DATA: " << bStereoAudio + 1 << "ch. @ " << fTimeNowMS << " ms\n";
 
 	mod->delayMs = 33;
@@ -135,7 +139,7 @@ void SendWavePacket()
 	mod->sRate = s_uSamplesPerSec;
 	mod->Render( mod );
 
-	fTimeNowMS += ( 1000.0f / 30.0f ) * ( bStereoAudio ? 2.0f : 1.0f );
+	fTimeNowMS += 33.333f * ( bStereoAudio ? 2.0f : 1.0f );
 }
 
 void SetStereo( bool bStereo )
