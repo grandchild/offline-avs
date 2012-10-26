@@ -1,73 +1,0 @@
-Nullsoft AVS Preset 0.2   ³  ¯  
-
-              _____________________________________
-             |                                     |\
-             |                                     |\\
-             |            Blood On The Motorway    |\\
-             |                                     |\\
-             |                     by OnionRing    |\\
-             |                                     |\\
-             |                                     |\\
-             |                                     |\\
-             |                                     |\\
-             |                                     |\\
-             |                                     |\\
-             |                                     |\\
-             |_____________________     ___________|\\
-              \\\\\\\\\\\\\\\\\\\\\\   |\\\\\\\\\\\\\\
-                                    \  |\\
-                                     \ |\\
-                                      \|\\
-                                        \\
-
-
-
-
-
-
-
-                     /|
-           _________/ |__
-          |              |\
-          |   Fall 2007  |\
-          |______________|\
-           \\\\\\\\\\\\\\\\
- þÿÿÿ>  €   $€   €                           @  AVS 2.8+ Effect List Config                    þÿÿÿ-  €   $€   €                           @  AVS 2.8+ Effect List Config                    äÀ™ Render: Triangle                þ  n = 1; r = r + yt;
-yt = getosc(0.1, 0.1, 0) * 5;
-st = sin(r); ct = cos(r); 
-xtt2 = xt2 + xtt;
-ytt2 = yt2 + ytt; xtt = (rand(100) - 50) * 0.01;
-ytt = (rand(100) - 50) * 0.01; xt1 = 0; 
-yt1 = 0;
-xt2 = 0.2 + yt; 
-yt2 = 0.6 + yt;
-xt3 = -yt; 
-yt3 = 0.6 + yt;
-
-// Apply rotation matrix
-x1 = (xt1 * st + yt1 * ct) +xtt2; 
-y1 = (xt1 * ct - yt1 * st) + ytt2;
-x2 = (xt2 * st + yt2 * ct) + xtt2; 
-y2 = (xt2 * ct - yt2 * st) + ytt2;
-x3 = (xt3 * st + yt3 * ct) + xtt2; 
-y3 = (xt3 * ct - yt3 * st) + ytt2; äÀ™ Render: Triangle                þ  n = 1; r = r + yt;
-yt = getosc(0.5, 0.1, 0) * 5;
-st = sin(r); ct = cos(r); 
-xtt2 = xt2 + xtt;
-ytt2 = yt2 + ytt; xtt = (rand(100) - 50) * 0.01;
-ytt = (rand(100) - 50) * 0.01; xt1 = 0; 
-yt1 = 0;
-xt2 = 0.2 + yt; 
-yt2 = 0.6 + yt;
-xt3 = -yt; 
-yt3 = 0.6 + yt;
-
-// Apply rotation matrix
-x1 = (xt1 * st + yt1 * ct) +xtt2; 
-y1 = (xt1 * ct - yt1 * st) + ytt2;
-x2 = (xt2 * st + yt2 * ct) + xtt2; 
-y2 = (xt2 * ct - yt2 * st) + ytt2;
-x3 = (xt3 * st + yt3 * ct) + xtt2; 
-y3 = (xt3 * ct - yt3 * st) + ytt2;                    ÿÿÿ        )   8         +ÿÿÿ   X              '   l   éÿÿÿ      ¤p½>                 ûÿÿÿ        øÿÿÿˆqb Color Map                       °                     "ž                                                       ("ž                                                       h"ž                                                       ˆ"ž                                                       H"ž                                                       ¨"ž                                                       È"ž                                                       è"ž                                                    ÿÿÿ    ÿ                       ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ    ˆqb Color Map                       °                       H&ž                                                       ('ž                                                       H$ž                                                       ¨&ž                                                       È'ž                                                       ¨$ž                                                       ¨%ž                                                       è!ž                                                ¼           ½   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ    +   >      d = d * 0.8;                                          þÿÿÿq   € $€   €                           @  AVS 2.8+ Effect List Config                                     3   þÿÿÿ  $€   €                          @  AVS 2.8+ Effect List Config                                    €      :   ÿ     x = -x * 0.5;
-y = -y * 0.5;                  ˆqb Color Map                       °                       $ž                                                       è&ž                                                       è$ž                                                       è%ž                                                       ˆ$ž                                                       &ž                                                       È%ž                                                       (ž                                                ›           ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ    l»c Holden03: Convolution Filter    Ü                                                                                                             øÿÿÿ                                                                                                   þÿÿÿ‹  €  $€   >                           @  AVS 2.8+ Effect List Config                    ˆqb Color Map                       °                      ¨'ž                                                       h'ž                                                       È$ž                                                       ($ž                                                       ˆ%ž                                                       (&ž                                                       È&ž                                                       h$ž                                                9           ñ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                    ø      :   ÿ     y = -y * 0.7;
-x = -x * 0.8;                  þÿÿÿI  € $€   €                          @  AVS 2.8+ Effect List Config                                    {   ˆqb Color Map                       °                      H'ž                                                       (%ž                                                       %ž                                                       ˆ&ž                                                       H%ž                                                       ˆ'ž                                                       h&ž                                                       h%ž                                                ”               ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ                ÿ   ÿÿÿ    ,1ilFuckYourSelfInTheNoseBitch            ÿ   
