@@ -1,11 +1,13 @@
 #include <math.h>
 #include <stdio.h>
 #include <windows.h>
+#include <limits.h>
 #include <iostream>
 
 #include "EntryPoint.h"
 #include "DummyWindow.h"
-#include "FFT.h"
+#include "kiss_fft.h"
+#include "kiss_fftr.h"
 #include "FrameDump.h"
 #include "WaveFileThingy.h"
 #include "WinampShiz.h"
@@ -18,6 +20,7 @@ using namespace std;
 static void* s_pBuffer = NULL;
 static unsigned int s_uBufferSize = 0;
 static unsigned int s_uSamplesPerSec = 0;
+static signed short s_sFftBuffer[ 2048 ];
 
 float fTimeNowMS = 0.0f;
 winampVisModule* mod;
@@ -57,6 +60,7 @@ int main( const unsigned int count, const char* const* const pszCommandLine )
 	mod->hDllInstance = hmod;
 	mod->Init(mod);
 
+	// Message loop
 	MSG msg;
 	while( GetMessage( &msg, NULL, 0, 0 ) )
 	{
@@ -71,65 +75,87 @@ int main( const unsigned int count, const char* const* const pszCommandLine )
 
 void SendWavePacket()
 {
-	const float sampleLength = static_cast< float >( s_uBufferSize ) / static_cast< float >( s_uSamplesPerSec );
+	const int fftBufferSize = 576 * 2;
 
+	const float sampleLength = static_cast< float >( s_uBufferSize ) / static_cast< float >( s_uSamplesPerSec );
+	
 	if( s_pBuffer )
 	{
 		const float fSampleNow = ( fTimeNowMS / 1000.0f ) * static_cast< float >( s_uSamplesPerSec );
 		const float pos = fSampleNow;
 		const int idx1 = static_cast< int >( floorf( pos ) );
-
+		
 		if ( bStereoAudio )
-		{
+		{	
 			// STEREO
+
+			kiss_fftr_cfg cfgL = kiss_fftr_alloc( fftBufferSize, 0, 0, 0 );
+			kiss_fftr_cfg cfgR = kiss_fftr_alloc( fftBufferSize, 0, 0, 0 );
+ 
+			kiss_fft_scalar fftInputL[ fftBufferSize ];
+			kiss_fft_scalar fftInputR[ fftBufferSize ];
+			kiss_fft_cpx fftOutputL[ fftBufferSize ];
+			kiss_fft_cpx fftOutputR[ fftBufferSize ];
+
+			for ( int i = 0; i < fftBufferSize; i++ )
+			{
+				fftInputL[ i ] = HanningWindow( static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ idx1 + ( i * 2 ) ] ), i, 1024 );
+				fftInputR[ i ] = HanningWindow( static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ idx1 + ( i * 2 ) + 1 ] ), i, 1024 );
+			}
+
+			kiss_fftr( cfgL, fftInputL, fftOutputL );
+			kiss_fftr( cfgR, fftInputR, fftOutputR );
+
 			for( int i = 0; i < 576; ++i )
 			{
 				mod->waveformData[ 0 ][ i ] = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ idx1 + ( i * 2 ) ] ) / 256.0f;
 				mod->waveformData[ 1 ][ i ] = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ idx1 + ( i * 2 ) + 1 ] ) / 256.0f;
 
-				//fftBuffer[ 2 * i ] = static_cast< float >( mod->waveformData[ 0 ][ i ] ) / 255.f;
-				//fftBuffer[ 2 * i + 1 ] = 0.0f;
+				kiss_fft_cpx cL = fftOutputL[ i ];
+				kiss_fft_cpx cR = fftOutputR[ i ];
+				float ampL = sqrt( cL.r * cL.r + cL.i * cL.i ) / ( double )SHRT_MAX;
+				float ampR = sqrt( cR.r * cR.r + cR.i * cR.i ) / ( double )SHRT_MAX;
+
+				mod->spectrumData[ 0 ][ i ] = ampL;
+				mod->spectrumData[ 1 ][ i ] = ampR;
 			}
 
-			mod->waveformNch = 2;
-			mod->spectrumNch = 2;
+			kiss_fft_cleanup();
+			free( cfgL );
+			free( cfgR );
 		}
 		else
 		{
 			// MONO
+
+			kiss_fftr_cfg cfg = kiss_fftr_alloc( fftBufferSize, 0, 0, 0 );
+
+			kiss_fft_scalar fftInput[ fftBufferSize ];
+			kiss_fft_cpx fftOutput[ fftBufferSize ];
+
+			for ( int i = 0; i < fftBufferSize; i++ )
+			{
+				fftInput[ i ] = HanningWindow( static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ idx1 + ( i * 2 ) ] ), i, 1024 );
+			}
+
+			kiss_fftr( cfg, fftInput, fftOutput );
+
 			for( int i = 0; i < 576; ++i )
 			{
 				mod->waveformData[ 0 ][ i ] = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ ( idx1 + ( i * 2 ) ) ] ) / 256.0f;
 				mod->waveformData[ 1 ][ i ] = static_cast< float >( reinterpret_cast< unsigned short* >( s_pBuffer )[ ( idx1 + ( i * 2 ) ) ] ) / 256.0f;
+				
+				// Normalize fft samples
+				kiss_fft_cpx c = fftOutput[ i ];
+				float amp = sqrt( c.r * c.r + c.i * c.i ) / ( double )SHRT_MAX;
+
+				mod->spectrumData[ 0 ][ i ] = amp;
+				mod->spectrumData[ 1 ][ i ] = amp;
 			}
 
-			mod->waveformNch = 2;
-			mod->spectrumNch = 2;
+			kiss_fft_cleanup();
+			free( cfg );
 		}
-
-		// Spectrum Data
-		/*
-		if ( bStereoAudio )
-		{
-			for( int i = 0; i < 576; ++i )
-			{
-				fftBuffer[ 2 * i ] = static_cast< float >( mod->waveformData[ 0 ][ i ] ) / 255.f;
-				fftBuffer[ 2 * i + 1 ] = 0.0f;
-			}
-		}
-
-		float fftBuffer[ 576 * 4 ];
-	
-
-		DanielsonLanczos< 576, float >::apply( fftBuffer );
-
-		for( int i = 0; i < 576; ++i )
-		{
-			mod->spectrumData[ 0 ][ i ] = static_cast< unsigned char >( fftBuffer[ i * 2 ] * 255.f / fftBuffer[ 0 ] );
-		}
-		
-		mod->spectrumNch = 1;
-		*/
 	}
 
 	cout << "PASSING NEW WAVE DATA: " << bStereoAudio + 1 << "ch. @ " << fTimeNowMS << " ms\n";
@@ -145,4 +171,9 @@ void SendWavePacket()
 void SetStereo( bool bStereo )
 {
 	bStereoAudio = bStereo;
+}
+
+float HanningWindow( short in, size_t i, size_t s )
+{
+	return in * 0.5f * ( 1.0f - cos( 2.0f * 3.14159f * ( float )( i ) / ( float )( s - 1.0f ) ) );
 }
