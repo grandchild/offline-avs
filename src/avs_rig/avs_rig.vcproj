@@ -21,7 +21,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			CharacterSet="1"
+			CharacterSet="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -60,9 +60,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libfftw3-3.lib bass.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="$(ProjectDir)..\..\lib"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -217,14 +216,6 @@
 		</File>
 		<File
 			RelativePath=".\EntryPoint.h"
-			>
-		</File>
-		<File
-			RelativePath=".\FrameDump.cpp"
-			>
-		</File>
-		<File
-			RelativePath=".\FrameDump.h"
 			>
 		</File>
 		<File
