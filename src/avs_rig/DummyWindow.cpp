@@ -1,6 +1,5 @@
 #include "DummyWindow.h"
 #include "EntryPoint.h"
-#include "FrameDump.h"
 #include "WinampShiz.h"
 
 #include <iostream>
@@ -70,15 +69,6 @@ LRESULT WINAPI WndProc( HWND h, UINT msg, WPARAM w, LPARAM l )
 		}
 
 		// SE: this is shit
-		case WM_KEYUP:
-		{
-			if( w == 0x43 )
-			{
-				StartFrameDump();
-			}
-
-			return DefWindowProcA( h, msg, w, l );
-		}
 		case WM_USER:
 		{
 			switch( l )
