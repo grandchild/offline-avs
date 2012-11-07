@@ -3,6 +3,7 @@
 
 #include <windows.h>
 
+void InitFile( const char* szFilename );
 void SendWavePacket();
 void SetStereo( bool bStereo );
 

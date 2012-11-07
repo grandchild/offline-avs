@@ -2,13 +2,13 @@
 #include <stdio.h>
 #include <windows.h>
 #include <limits.h>
+#include <direct.h>
 #include <iostream>
 
 #include "EntryPoint.h"
 #include "DummyWindow.h"
 #include "kiss_fft.h"
 #include "kiss_fftr.h"
-#include "FrameDump.h"
 #include "WaveFileThingy.h"
 #include "WinampShiz.h"
 
@@ -39,8 +39,9 @@ int main( const unsigned int count, const char* const* const pszCommandLine )
 					return -1;
 				}
 	default:
-	case 5:		{
-					LoadWaveFileThingy( pszCommandLine[ 4 ] );
+	case 6:		{
+					InitFile( pszCommandLine[ 5 ] );
+	case 5:			LoadWaveFileThingy( pszCommandLine[ 4 ] );
 					GetBuffer( s_pBuffer, s_uBufferSize, s_uSamplesPerSec );
 					s_uBufferSize >>= 1;
 	case 4:			avsHeight = atoi( pszCommandLine[ 3 ] );
@@ -71,6 +72,87 @@ int main( const unsigned int count, const char* const* const pszCommandLine )
 	//mod.Quit( &mod );
 
 	return 0;
+}
+
+void InitFile( const char* szFilename )
+{	
+	// JA: Too lazy for error handling... there shouldn't be any from the gui frontend anyway.
+
+	long lSize;
+	char * pBuffer;
+	size_t result;
+	bool foundMarker = false;
+
+	// Get vis_avs.dat path
+	char szBuffTarget[ MAX_PATH ];
+	char* szBuffPath = _getcwd( NULL, 0 );
+	sprintf( szBuffTarget, "%s\\plugins\\vis_avs.dat", szBuffPath );
+	
+	// Open binary file
+	const char* szMarker = "PNGSaveEveryFrame";
+	FILE *pFileIn = fopen( szFilename, "rb");
+
+	// Get file size
+	fseek( pFileIn, 0, SEEK_END );
+	lSize = ftell( pFileIn );
+	rewind( pFileIn );
+
+	// Load the whole thing into the buffer
+	pBuffer = ( char* ) malloc( sizeof( char ) * lSize );
+	result = fread( pBuffer, 1, lSize, pFileIn );
+
+	// Try and find our marker string
+	int counter = 0;
+	for( int i = 0; i < lSize; i++ )
+	{
+		if( pBuffer[ i ] == szMarker[ counter ] )
+		{
+			while( pBuffer[ i + counter ] == szMarker[ counter ] )
+			{
+				counter++;
+		
+				if( counter > 16 ) // Hardcoded string length...
+				{
+					foundMarker = true;
+					break;
+				}
+			}
+			counter = 0;
+		}
+	}
+	
+	// Create destination file
+	FILE * pFileOut;
+	pFileOut = fopen( szBuffTarget, "wb" );
+	fwrite( pBuffer, 1, lSize, pFileOut );
+
+	// Add the PNG APE stuff if it's not there
+	if( !foundMarker )
+	{
+		cout << "Adding PNG APE\n";
+		
+		// Load our png ape additional binary
+		FILE *pFileAPEBin = fopen( "pngadd.bin", "rb");
+
+		// Get file size
+		fseek( pFileAPEBin, 0, SEEK_END );
+		lSize = ftell( pFileAPEBin );
+		rewind( pFileAPEBin );
+
+		// Load the whole thing into the buffer
+		char * pAPEBuffer = ( char* ) malloc( sizeof( char ) * lSize );
+		result = fread( pAPEBuffer, 1, lSize, pFileAPEBin );
+		
+		// Write to vis_avs.dat preset file
+		fwrite( pAPEBuffer, 1, lSize, pFileOut );
+		fclose( pFileAPEBin );
+		free( pAPEBuffer );
+	}
+
+	// Cleanup
+	fclose( pFileIn );
+	fclose( pFileOut );
+	free( pBuffer );
 }
 
 void SendWavePacket()
