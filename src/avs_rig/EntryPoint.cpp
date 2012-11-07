@@ -28,6 +28,7 @@ bool bStereoAudio = false;
 
 int main( const unsigned int count, const char* const* const pszCommandLine )
 {
+	SetProcessDEPPolicy( 0 );
 	const char* dllPath = pszCommandLine[ 0 ];
 
 	// SE - 17/10/2012: note fall through is intentional
